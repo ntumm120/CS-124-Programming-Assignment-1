@@ -53,9 +53,21 @@ class Graph{
             while(H.get_size()) {
                 node tmp = H.delete_min();
                 S.push_back(tmp.label);
-                
+                for (int j = 1; j < v + 1; j++) {
+                    if (std::count(S.begin(), S.end(), j)) {
+                        continue;
+                    }
+                    else {
+                        float x = rand_edge();
+                        dist[j-1] = min(x, dist[j-1]);
+                        node t = {j, x};
+                        H.insert(t);
+                    }
+                }
             }
-            cout << endl;
+            for (float weights: dist) {
+                mindist += weights;
+            }
             return mindist;
         }
     }
