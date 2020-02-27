@@ -22,6 +22,7 @@ class Graph{
 };
 
     Graph::Graph(int n, int d) {
+        srand(time(NULL));
         (*this).v = n;
         (*this).d = d;
     }
@@ -46,7 +47,7 @@ class Graph{
     }
 
     float Graph::prims() {
-        srand(time(NULL));
+        
         int S[v];
         for (int i = 0; i < v; i ++) {
             S[i] = 0;
@@ -111,13 +112,14 @@ class Graph{
                     }
                     else {
                         float x = distance(coords[tmp.label], coords[j]);
-                        cout << x << endl;
+                        // if (x > 0.125) {
+                        //     continue;
+                        // }
                         dist[j-1] = min(x, dist[j-1]);
                         node t = {j, x};
                         H.insert(t);
                     }
                 }
-                cout << endl;
             }
             for (float weights: dist) {
                 mindist += weights;
@@ -139,6 +141,30 @@ class Graph{
     // 65536 points 1.20089
     // 131072 points 1.2022
     // 262144 points 1.20188
+
+    // 128 points 7.75851
+    // 256 points 10.6421
+    // 512 points 14.9976
+    // 1024 points 20.995
+    // 2048 points 29.5499
+    // 4096 points 41.8202
+    // 8192 points 58.9278
+    // 16384 points 83.2951
+    // 32768 points 117.388
+    // 65536 points 166.17
+    // 131072 points 234.672
+    // 262144 points 331.857
+
+    //FOR 4 D
+    // 128 points 28.2916
+    // 256 points 47.7364
+    // 512 points 78.8318
+    // 1024 points 130.327
+    // 2048 points 216.834
+    // 4096 points 360.997
+    // 8192 points 603.146
+    // 16384 points 1009.43
+
     int main(int argc, char *argv[]) {
         int flag = atoi(argv[1]);
         int numpoints = atoi(argv[2]);
@@ -146,9 +172,10 @@ class Graph{
         int dimension = atoi(argv[4]);
         float sum = 0;
         
-        for (int i = 0; i < 1; i++) {
+        for (int i = 0; i < numtrials; i++) {
             Graph* g = new Graph(numpoints, dimension);
             sum += (*g).prims();
+            cout << i << endl;
         }
 
         cout << numpoints << " points " << sum / numtrials << endl;
