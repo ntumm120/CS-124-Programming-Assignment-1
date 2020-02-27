@@ -22,6 +22,7 @@ class Heap {
         vector<node> H;
         Heap();
         void insert(node i);
+        void update(int label, float value);
         node delete_min();
         int get_size() {
             return H.size();
@@ -48,10 +49,11 @@ int Heap::left(int i) {
 }
 
 void Heap::swap(int i, int j) {
-    cout << "Fuck" << endl;
     node tmp = H[i];
     H[i] = H[j];
+    location[H[i].label] = i;
     H[j] = tmp;
+    location[H[j].label] = j;
 }
 
 void Heap::min_heapify(int i) {
@@ -64,55 +66,46 @@ void Heap::min_heapify(int i) {
         smallest = r;
     if (smallest != i) {
         swap(i, smallest);
-        location[H[smallest].label] = smallest;
-        location[H[i].label] = i;
         min_heapify(smallest);
     }
     
 }
 
-void Heap::insert(node i) {
-    
-    cout << endl;
-    if (location[i.label] && H[location[i.label]].dist > i.dist) {
-        cout << "Fuck" << endl;
-        H[location[i.label]] = H[get_size()-1];
-        location[H[location[i.label]].label] = location[i.label];
-        location.erase(H[location[i.label]].label);
-        H.pop_back();
-        min_heapify(location[i.label]);
-    }
-    else if (location[i.label]) {
+void Heap::update(int label, float value) {
+    int n = location[label];
+    if (H[n].dist <= value) {
         return;
     }
-    H.push_back(i);
-    int n = H.size() - 1;
+    H[n].dist = value;
     while (n > 0 && (H[parent(n)].dist > H[n].dist)) {
         swap(parent(n), n);
-        location[H[parent(n)].label] = parent(n);
-        location[H[n].label] = n;
         n = parent(n);
     }
-    location[H[n].label] = n;
-    if (get_size() >= 1){
-        cout << H[0].label << endl;
-    }
-    if (get_size() >= 2){
-        cout << H[1].label << endl;
-    }
-    if (get_size() >= 3){
-        cout << H[2].label << endl;
-        
-    }
+}
 
+void Heap::insert(node i) {
+    if (location.find(i.label) != location.end()) {   
+        update(i.label, i.dist);
+    }
+    else {
+        
+        H.push_back(i);
+        location[i.label] = get_size() - 1;
+        int n = H.size() - 1;
+        while (n > 0 && (H[parent(n)].dist > H[n].dist)) {
+            swap(parent(n), n);
+            n = parent(n);
+        }
+    }
+    
 }
 
 node Heap::delete_min() {
     node min = H[0];
-    H[0] = H[get_size()-1];
-    location[H[0].label] = 0;
-    location.erase(H[get_size()-1].label);
+    swap(0, get_size() - 1);
     H.pop_back();
     min_heapify(0);
+    location.erase(min.label);
     return min;
 }
+

@@ -2,6 +2,7 @@
 #include <vector>
 #include <unordered_map> 
 #include <time.h>
+#include <math.h>
 #include "minheap.h"
 
 using namespace std;
@@ -15,6 +16,7 @@ class Graph{
         Graph(int n, int d);
         float rand_edge();
         float* rand_coords();
+        float distance(float* p1, float* p2);
         float prims();
         
 };
@@ -27,17 +29,28 @@ class Graph{
         return ((float) rand() / (RAND_MAX));
     }
 
+    float Graph::distance(float* p1, float* p2) {
+        float difference = 0;
+        for (int i = 0; i < d; i ++) {
+            difference = difference + (p1[i] - p2[i]) * (p1[i] - p2[i]);
+        }
+        return sqrt(difference);
+    }
+
     float* Graph::rand_coords() {
         float arr[d];
         for (int i = 0; i < d; i++) {
-            arr[i] = rand() / RAND_MAX;
+            arr[i] = (float) rand() / (RAND_MAX);
         }
         return arr;
     }
 
     float Graph::prims() {
         srand(time(NULL));
-        vector<int> S;
+        int S[v];
+        for (int i = 0; i < v; i ++) {
+            S[i] = 0;
+        }
         Heap H = *(new Heap());
         
         if (d == 0) {
@@ -45,20 +58,23 @@ class Graph{
             float dist[v];
             dist[0] = 0;
             for (int i = 0; i < v; i++) {
-                dist[i] = 1.000000001;
+                dist[i] = 1.000000002;
             }
             node s = {1, 0};
             dist[0] = 0;
             H.insert(s);
             while(H.get_size()) {
                 node tmp = H.delete_min();
-                S.push_back(tmp.label);
+                S[tmp.label - 1] = 1;
                 for (int j = 1; j < v + 1; j++) {
-                    if (std::count(S.begin(), S.end(), j)) {
+                    if (S[j-1]) {
                         continue;
                     }
                     else {
                         float x = rand_edge();
+                        if (x > 0.05) {
+                            continue;
+                        }
                         dist[j-1] = min(x, dist[j-1]);
                         node t = {j, x};
                         H.insert(t);
@@ -70,8 +86,72 @@ class Graph{
             }
             return mindist;
         }
+        else {
+            float coords[v][d];
+            for (int i = 0; i < v; i++) {
+                for (int j = 0; j < d; j++) {
+                    coords[i][j] = rand_edge();
+                }
+            }
+            float mindist = 0;
+            float dist[v];
+            dist[0] = 0;
+            for (int i = 0; i < v; i++) {
+                dist[i] = 1.000000002;
+            }
+            node s = {1, 0};
+            dist[0] = 0;
+            H.insert(s);
+            while(H.get_size()) {
+                node tmp = H.delete_min();
+                S[tmp.label - 1] = 1;
+                for (int j = 1; j < v + 1; j++) {
+                    if (S[j-1]) {
+                        continue;
+                    }
+                    else {
+                        float x = distance(coords[tmp.label], coords[j]);
+                        cout << x << endl;
+                        dist[j-1] = min(x, dist[j-1]);
+                        node t = {j, x};
+                        H.insert(t);
+                    }
+                }
+                cout << endl;
+            }
+            for (float weights: dist) {
+                mindist += weights;
+            }
+            return mindist;
+            
+
+        }
     }
-    int main() {
-        Graph* g = new Graph(4, 0);
-        cout << (*g).prims() << endl;
+    // 128 points 1.13549
+    // 256 points 1.30461
+    // 512 points 1.21668
+    // 1024 points 1.14358
+    // 2048 points 1.23614
+    // 4096 points 1.18798
+    // 8192 points 1.1997
+    // 16384 points 1.20106
+    // 32768 points 1.20264
+    // 65536 points 1.20089
+    // 131072 points 1.2022
+    // 262144 points 1.20188
+    int main(int argc, char *argv[]) {
+        int flag = atoi(argv[1]);
+        int numpoints = atoi(argv[2]);
+        int numtrials = atoi(argv[3]);
+        int dimension = atoi(argv[4]);
+        float sum = 0;
+        
+        for (int i = 0; i < 1; i++) {
+            Graph* g = new Graph(numpoints, dimension);
+            sum += (*g).prims();
+        }
+
+        cout << numpoints << " points " << sum / numtrials << endl;
+            
+        
     }
